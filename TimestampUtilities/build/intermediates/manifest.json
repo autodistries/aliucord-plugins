@@ -1,0 +1,18 @@
+{
+    "authors": [
+        {
+            "id": 532967505438965780,
+            "name": "\u2135\u273a\u2118\u1e19"
+        }
+    ],
+    "links": {
+        
+    },
+    "version": "1.0.0",
+    "changelogMedia": null,
+    "description": "Translates ID to date!",
+    "pluginClassName": "com.aliucord.plugins.TimestampUtilities",
+    "changelog": null,
+    "name": "TimestampUtilities",
+    "updateUrl": "https://raw.githubusercontent.com/autodistries/aliucord-plugins/builds/updater.json"
+}
