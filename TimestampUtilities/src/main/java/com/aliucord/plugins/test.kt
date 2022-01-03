@@ -5,8 +5,24 @@ import com.aliucord.Http
 import com.aliucord.Utils
 import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.api.CommandsAPI
+import com.aliucord.api.CommandsAPI.CommandResult
 import com.aliucord.entities.Plugin
 import com.discord.api.commands.ApplicationCommandType
+import com.aliucord.entities.MessageEmbedBuilder
+import com.discord.models.user.User
+import java.util.*
+
+
+data class UserGlobalInfo(
+    val accent_color: Int,
+    val avatar: String,
+    val banner: Any,
+    val banner_color: String,
+    val discriminator: String,
+    val id: String,
+    val public_flags: Int,
+    val username: String
+)
 
 // import java.util.*
 
@@ -44,26 +60,41 @@ class TimestampUtilities : Plugin() {
             Utils.createCommandOption(ApplicationCommandType.STRING, "timestamp", "Gimme user timestamp", null, true, true)
         )) { ctx ->
             val userId = ctx.getRequiredString("timestamp")
-            val userinfo: String = try {
+            val userinfo: UserGlobalInfo = try {
                 Http.Request.newDiscordRequest("/users/$userId")
                     .execute()
-                    .text()
+                    .json(UserGlobalInfo::class.java)
+
 
             } catch (throwable: Throwable) {
                 logger.error(throwable)
-                return@registerCommand CommandsAPI.CommandResult(
-                    "Sowwyyy  i faiwed. >.<",
+                return@registerCommand CommandResult(
+                    "Mission failed",
                     null,
                     false
                 )
             }
 
+            val discordEpoch = 1420070400000
+            val dateBits = userId.toLong() shr 22
+            val unix = (dateBits + discordEpoch)
+            val unix2 = unix / 1000
 
 
 
-            CommandsAPI.CommandResult("OwO youww uwer iw $userinfo", null, false)
+
+
+            val embed: MessageEmbedBuilder =
+                MessageEmbedBuilder().setRandomColor().setTitle("Username: " + userinfo.username + "#" + userinfo.discriminator).setImage("https://cdn.discordapp.com/avatars/${userId}/${userinfo.avatar}.webp?size=1024").setFooter("/userinfo | $userId").setDescription("Account created on <t:$unix2:F>")
+
+
+
+
+            CommandResult("", Collections.singletonList(embed.build()), false)
 
         }
+
+
 
     }
 
@@ -71,7 +102,6 @@ class TimestampUtilities : Plugin() {
         // Unregister our commands
         commands.unregisterAll()
     }
+
+
 }
-
-
-class Testclass(val info: String)
