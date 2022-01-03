@@ -6,10 +6,9 @@ import com.aliucord.Utils
 import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.api.CommandsAPI
 import com.aliucord.api.CommandsAPI.CommandResult
+import com.aliucord.entities.MessageEmbedBuilder
 import com.aliucord.entities.Plugin
 import com.discord.api.commands.ApplicationCommandType
-import com.aliucord.entities.MessageEmbedBuilder
-import com.discord.models.user.User
 import java.util.*
 
 
@@ -24,15 +23,11 @@ data class UserGlobalInfo(
     val username: String
 )
 
-// import java.util.*
-
 // Aliucord Plugin annotation. Must be present on the main class of your plugin
 @AliucordPlugin(requiresRestart = false /* Whether your plugin requires a restart after being installed/updated */)
 // Plugin class. Must extend Plugin and override start and stop
 // Learn more: https://github.com/Aliucord/documentation/blob/main/plugin-dev/1_introduction.md#basic-plugin-structure
 class TimestampUtilities : Plugin() {
-
-
 
     override fun start(context: Context) {
 
@@ -41,9 +36,18 @@ class TimestampUtilities : Plugin() {
         // Learn more: https://github.com/Aliucord/documentation/blob/main/plugin-dev/2_commands.md
 
 
-        commands.registerCommand("timestamp", "Converts discord ID to date", listOf(
-            Utils.createCommandOption(ApplicationCommandType.STRING, "timestamp", "Gimme timestamp", null, true, true)
-        )) { ctx ->
+        commands.registerCommand(
+            "timestamp", "Converts discord ID to date", listOf(
+                Utils.createCommandOption(
+                    ApplicationCommandType.STRING,
+                    "timestamp",
+                    "Gimme timestamp",
+                    null,
+                    true,
+                    true
+                )
+            )
+        ) { ctx ->
             val id = ctx.getRequiredString("timestamp")
             val discordEpoch = 1420070400000
             val dateBits = id.toLong() shr 22
@@ -52,13 +56,26 @@ class TimestampUtilities : Plugin() {
             //val time = Date(unix) useless for now
 
 
-                CommandsAPI.CommandResult("Message/User was created on <t:$unix2:F>. That's <t:$unix2:R>.", null, false)
+            CommandsAPI.CommandResult(
+                "Message/User was created on <t:$unix2:F>. That's <t:$unix2:R>.",
+                null,
+                false
+            )
 
         }
 
-        commands.registerCommand("userinfo", "Hopefully gets info over a user idk", listOf(
-            Utils.createCommandOption(ApplicationCommandType.STRING, "timestamp", "Gimme user timestamp", null, true, true)
-        )) { ctx ->
+        commands.registerCommand(
+            "userinfo", "Hopefully gets info over a user idk", listOf(
+                Utils.createCommandOption(
+                    ApplicationCommandType.STRING,
+                    "timestamp",
+                    "Gimme user timestamp",
+                    null,
+                    true,
+                    true
+                )
+            )
+        ) { ctx ->
             val userId = ctx.getRequiredString("timestamp")
             val userinfo: UserGlobalInfo = try {
                 Http.Request.newDiscordRequest("/users/$userId")
@@ -68,11 +85,7 @@ class TimestampUtilities : Plugin() {
 
             } catch (throwable: Throwable) {
                 logger.error(throwable)
-                return@registerCommand CommandResult(
-                    "Mission failed",
-                    null,
-                    false
-                )
+                return@registerCommand CommandResult("Mission failed", null, false)
             }
 
             val discordEpoch = 1420070400000
@@ -81,11 +94,12 @@ class TimestampUtilities : Plugin() {
             val unix2 = unix / 1000
 
 
-
-
-
             val embed: MessageEmbedBuilder =
-                MessageEmbedBuilder().setRandomColor().setTitle("Username: " + userinfo.username + "#" + userinfo.discriminator).setImage("https://cdn.discordapp.com/avatars/${userId}/${userinfo.avatar}.webp?size=1024").setFooter("/userinfo | $userId").setDescription("Account created on <t:$unix2:F>")
+                MessageEmbedBuilder().setRandomColor()
+                    .setTitle("Username: " + userinfo.username + "#" + userinfo.discriminator)
+                    .setImage("https://cdn.discordapp.com/avatars/${userId}/${userinfo.avatar}.webp?size=2048")
+                    .setFooter("/userinfo | $userId")
+                    .setDescription("Account created on <t:$unix2:F>")
 
 
 
@@ -93,7 +107,6 @@ class TimestampUtilities : Plugin() {
             CommandResult("", Collections.singletonList(embed.build()), false)
 
         }
-
 
 
     }
