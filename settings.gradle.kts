@@ -10,12 +10,12 @@ include(
     "MyFirstPatch"*/
 )
 
-// This is required because plugins are in the ExamplePlugins/kotlin subdirectory.
+// This is required because dev.nope.plugins are in the ExamplePlugins/kotlin subdirectory.
 //
-// Assuming you put all your plugins into the project root, so on the same
+// Assuming you put all your dev.nope.plugins into the project root, so on the same
 // level as this file, simply remove everything below.
 //
-// Otherwise, if you want a different structure, for example all plugins in a folder called "plugins",
+// Otherwise, if you want a different structure, for example all dev.nope.plugins in a folder called "dev.nope.plugins",
 // then simply change the path
 /*
 rootProject.children.forEach {

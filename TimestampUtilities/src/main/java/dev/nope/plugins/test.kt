@@ -1,4 +1,4 @@
-package com.aliucord.plugins
+package dev.nope.plugins
 
 import android.content.Context
 import com.aliucord.Http
@@ -12,22 +12,18 @@ import com.discord.api.commands.ApplicationCommandType
 import java.util.*
 
 
-data class UserGlobalInfo(
-    val accent_color: Int,
-    val avatar: String,
-    val banner: Any,
-    val banner_color: String,
-    val discriminator: String,
-    val id: String,
-    val public_flags: Int,
-    val username: String
-)
-
-// Aliucord Plugin annotation. Must be present on the main class of your plugin
-@AliucordPlugin(requiresRestart = false /* Whether your plugin requires a restart after being installed/updated */)
-// Plugin class. Must extend Plugin and override start and stop
-// Learn more: https://github.com/Aliucord/documentation/blob/main/plugin-dev/1_introduction.md#basic-plugin-structure
+@AliucordPlugin(requiresRestart = false )
 class TimestampUtilities : Plugin() {
+
+
+    private fun timestampToUnixTime(x: Long): Long {
+        val discordEpoch = 1420070400000
+        val dateBits = x shr 22
+        val unixTimes1000 = (dateBits + discordEpoch)
+        return unixTimes1000 / 1000
+        // val time = Date(unix) That is less precise and adapting to timezones is harder
+
+    }
 
     override fun start(context: Context) {
 
@@ -43,21 +39,17 @@ class TimestampUtilities : Plugin() {
                     "timestamp",
                     "Gimme timestamp",
                     null,
-                    true,
-                    true
+                    required = true,
+                    default = true
                 )
             )
         ) { ctx ->
             val id = ctx.getRequiredString("timestamp")
-            val discordEpoch = 1420070400000
-            val dateBits = id.toLong() shr 22
-            val unix = (dateBits + discordEpoch)
-            val unix2 = unix / 1000
-            //val time = Date(unix) useless for now
+            val unixTime = timestampToUnixTime(id.toLong())
 
 
             CommandsAPI.CommandResult(
-                "Message/User was created on <t:$unix2:F>. That's <t:$unix2:R>.",
+                "Message/User was created on <t:$unixTime:F>. That's <t:$unixTime:R>.",
                 null,
                 false
             )
@@ -65,14 +57,14 @@ class TimestampUtilities : Plugin() {
         }
 
         commands.registerCommand(
-            "userinfo", "Hopefully gets info over a user idk", listOf(
+            "userinfo", "Gets basic info over any user", listOf(
                 Utils.createCommandOption(
                     ApplicationCommandType.STRING,
                     "timestamp",
                     "Gimme user timestamp",
                     null,
-                    true,
-                    true
+                    required = true,
+                    default = true
                 )
             )
         ) { ctx ->
@@ -85,13 +77,8 @@ class TimestampUtilities : Plugin() {
 
             } catch (throwable: Throwable) {
                 logger.error(throwable)
-                return@registerCommand CommandResult("Mission failed", null, false)
+                return@registerCommand CommandResult("Mission failed, sorry. Help by reporting that. Check the logs !", null, false)
             }
-
-            val discordEpoch = 1420070400000
-            val dateBits = userId.toLong() shr 22
-            val unix = (dateBits + discordEpoch)
-            val unix2 = unix / 1000
 
 
             val embed: MessageEmbedBuilder =
@@ -99,7 +86,7 @@ class TimestampUtilities : Plugin() {
                     .setTitle("Username: " + userinfo.username + "#" + userinfo.discriminator)
                     .setImage("https://cdn.discordapp.com/avatars/${userId}/${userinfo.avatar}.webp?size=2048")
                     .setFooter("/userinfo | $userId")
-                    .setDescription("Account created on <t:$unix2:F>")
+                    .setDescription("Account created on <t:${timestampToUnixTime(userId.toLong())}:F>")
 
 
 
