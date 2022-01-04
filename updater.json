@@ -1,1 +1,1 @@
-{"TimestampUtilities":{"minimumDiscordVersion":105112,"version":"1.0.1","build":"https://raw.githubusercontent.com/autodistries/aliucord-plugins/builds/%s.zip","changelog":"# 1.0.1\n* Added /userinfo command, which takes timestamp to get any user's info. Will add a way to know if you have a server in common with the guy later.\n* Bettered /timestamp\n*Code cleanup but there is more to do"}}
+{"TimestampUtilities":{"minimumDiscordVersion":105112,"version":"1.0.3","build":"https://raw.githubusercontent.com/autodistries/aliucord-plugins/builds/%s.zip"}}
