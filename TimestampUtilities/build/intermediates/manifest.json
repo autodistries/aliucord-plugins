@@ -10,8 +10,8 @@
     },
     "version": "1.0.0",
     "changelogMedia": null,
-    "description": "Translates ID to date!",
-    "pluginClassName": "com.aliucord.plugins.TimestampUtilities",
+    "description": "Adds a /whois that return the most info it can find about your user",
+    "pluginClassName": "dev.vendicated.nope.plugins.timestamputilities.UserLookup",
     "changelog": null,
     "name": "TimestampUtilities",
     "updateUrl": "https://raw.githubusercontent.com/autodistries/aliucord-plugins/builds/updater.json"
