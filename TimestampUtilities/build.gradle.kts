@@ -1,4 +1,4 @@
-version = "1.0.0"
+version = "1.0.3"
 description = "Adds a /whois that return the most info it can find about your user"
 
 /*aliucord.changelog.set("""
