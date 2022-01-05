@@ -1,4 +1,3 @@
 # TimestampUtilities
 
-Adds a whois command
-
+Converts Discord snowflakes to time.

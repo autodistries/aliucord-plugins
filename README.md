@@ -7,3 +7,5 @@ Plugins for aliucord
 
 ### Manual installation
 Download the plugins from [here](https://github.com/autodistries/aliucord-plugins/tree/builds) and move the zip to `/Aliucord/plugins`
+
+## Plugins

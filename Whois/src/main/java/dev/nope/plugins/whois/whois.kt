@@ -1,5 +1,4 @@
 /*
- * Ven's Aliucord Plugins
  * Copyright (C) 2021 Vendicated
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -8,7 +7,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
 */
 
-package dev.vendicated.nope.plugins.timestamputilities
+package dev.nope.plugins.whois
 
 import android.content.Context
 import android.graphics.Color
@@ -128,15 +127,7 @@ class UserLookup : Plugin() {
             CommandsAPI.CommandResult(null, embed, false)
         }
 
-        commands.registerCommand("timestamp", "Converts discord ID to a date", listOf(
-                Utils.createCommandOption(ApplicationCommandType.STRING,"timestamp","Gimme timestamp to convert",null, required = true, default = true)
-            )
-        ) { ctx ->
-            val id = ctx.getRequiredString("timestamp")
-            val unixTime = timestampToUnixTime(id.toLong())
-            CommandsAPI.CommandResult("Message/User was created on <t:$unixTime:F>. That's <t:$unixTime:R>.",null,false)
 
-        }
     }
 
     override fun stop(context: Context) {
@@ -186,12 +177,5 @@ class UserLookup : Plugin() {
         }.joinToString(", ")
     }
 
-    private fun timestampToUnixTime(x: Long): Long {
-        val discordEpoch = 1420070400000
-        val dateBits = x shr 22
-        val unixTimes1000 = (dateBits + discordEpoch)
-        return unixTimes1000 / 1000
-
-    }
 }
 
