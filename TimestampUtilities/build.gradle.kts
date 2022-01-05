@@ -1,10 +1,10 @@
 version = "1.0.3"
-description = "Adds a /whois that return the most info it can find about your user"
+description = "Adds a /whois that inputs a mention or a userid and returns the most info it can find about that user"
 
-/*aliucord.changelog.set("""
-    # 1.0.1
-    * Added /userinfo command, which takes timestamp to get any user's info. Will add a way to know if you have a server in common with the guy later.
-    * Bettered /timestamp
-    *Code cleanup but there is more to do
-""".trimIndent())
-*/
+aliucord.changelog.set("""
+    # 1.0.3
+    * New code thanks to Vendicated
+""".trimIndent()
+
+)
+aliucord.author("Vendicated", 343383572805058560L)

@@ -128,7 +128,7 @@ class UserLookup : Plugin() {
             CommandsAPI.CommandResult(null, embed, false)
         }
 
-        commands.registerCommand("timestamp", "Converts discord ID to date", listOf(
+        commands.registerCommand("timestamp", "Converts discord ID to a date", listOf(
                 Utils.createCommandOption(ApplicationCommandType.STRING,"timestamp","Gimme timestamp to convert",null, required = true, default = true)
             )
         ) { ctx ->
