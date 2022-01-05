@@ -10,9 +10,9 @@
     },
     "version": "1.0.0",
     "changelogMedia": null,
-    "description": "Adds a /whois that return the most info it can find about your user",
-    "pluginClassName": "dev.vendicated.nope.plugins.timestamputilities.UserLookup",
-    "changelog": null,
+    "description": "Adds a /timestamp command to translate discord timestamps to time",
+    "pluginClassName": "dev.nope.plugins.timestamputilities.TimestampUtilities",
+    "changelog": "# 1.0.0\n* Created a separate plugin for Whois",
     "name": "TimestampUtilities",
     "updateUrl": "https://raw.githubusercontent.com/autodistries/aliucord-plugins/builds/updater.json"
 }

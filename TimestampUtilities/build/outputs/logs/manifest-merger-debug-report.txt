@@ -1,14 +1,14 @@
 -- Merging decision tree log ---
 manifest
-ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-44
-INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-44
-INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-44
+ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-59
+INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-59
+INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-59
 	package
-		ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:11-41
+		ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:11-56
 		INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml
 		INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml
 	xmlns:android
-		ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-44
+		ADDED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml:2:1-59
 uses-sdk
 INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from /home/guigui/Code/aliucord-plugins/TimestampUtilities/src/main/AndroidManifest.xml
