@@ -29,7 +29,7 @@ class Find : Plugin() {
                 Utils.createCommandOption(
                     ApplicationCommandType.STRING,
                     "timestampList",
-                    "Timestamps you want answers on. Separate with simple spaces. Later: separate with what you want",
+                    "Timestamps you want answers on. Separate with simple spaces.",
                     null,
                     required = true,
                     default = true
