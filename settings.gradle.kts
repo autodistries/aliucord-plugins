@@ -5,8 +5,8 @@ rootProject.name = "AliucordPlugins"
 
 // Plugins are included like this
 include(
-    "TimestampUtilities",
-    "Whois"/*,
+    "Find"/*,
+    "Whois",
     "MyFirstPatch"*/
 )
 
