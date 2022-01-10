@@ -1,4 +1,4 @@
-# TimestampUtilities
+# Whois
 
 Adds a whois command
 

@@ -1,4 +1,4 @@
-version = "1.0.4"
+version = "1.0.5"
 description = "Adds a /timestamp command to translate discord timestamps to time"
 
 aliucord.changelog.set("""

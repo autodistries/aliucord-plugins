@@ -10,7 +10,7 @@ Download the plugins from [here](https://github.com/autodistries/aliucord-plugin
 
 ## Plugins
 
-### TimestampUtilities
+### SnowflakeUtilities
 A /timestamp to convert any discord timestamp to a readable date. Takes an ID.
 
 ### Whois

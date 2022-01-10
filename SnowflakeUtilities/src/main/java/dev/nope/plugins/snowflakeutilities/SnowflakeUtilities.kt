@@ -1,4 +1,4 @@
-ackage dev.nope.plugins
+package dev.nope.plugins.snowflakeutilities
 
 import android.content.Context
 import com.aliucord.Http
@@ -13,7 +13,7 @@ import java.util.*
 
 
 @AliucordPlugin(requiresRestart = false )
-class TimestampUtilities : Plugin() {
+class SnowflakeUtilities : Plugin() {
 
 
     private fun timestampToUnixTime(x: Long): Long {
@@ -53,45 +53,6 @@ class TimestampUtilities : Plugin() {
                 null,
                 false
             )
-
-        }
-
-        commands.registerCommand(
-            "userinfo", "Gets basic info over any user", listOf(
-                Utils.createCommandOption(
-                    ApplicationCommandType.STRING,
-                    "timestamp",
-                    "Gimme user timestamp",
-                    null,
-                    required = true,
-                    default = true
-                )
-            )
-        ) { ctx ->
-            val userId = ctx.getRequiredString("timestamp")
-            val userinfo: UserGlobalInfo = try {
-                Http.Request.newDiscordRequest("/users/$userId")
-                    .execute()
-                    .json(UserGlobalInfo::class.java)
-
-
-            } catch (throwable: Throwable) {
-                logger.error(throwable)
-                return@registerCommand CommandResult("Mission failed, sorry. Help by reporting that. Check the logs !", null, false)
-            }
-
-
-            val embed: MessageEmbedBuilder =
-                MessageEmbedBuilder().setRandomColor()
-                    .setTitle("Username: " + userinfo.username + "#" + userinfo.discriminator)
-                    .setImage("https://cdn.discordapp.com/avatars/${userId}/${userinfo.avatar}.webp?size=2048")
-                    .setFooter("/userinfo | $userId")
-                    .setDescription("Account created on <t:${timestampToUnixTime(userId.toLong())}:F>")
-
-
-
-
-            CommandResult("", Collections.singletonList(embed.build()), false)
 
         }
 

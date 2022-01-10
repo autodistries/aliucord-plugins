@@ -5,9 +5,9 @@ rootProject.name = "AliucordPlugins"
 
 // Plugins are included like this
 include(
-    "Find"/*,
+    "Find",
     "Whois",
-    "MyFirstPatch"*/
+    "SnowflakeUtilities"
 )
 
 // This is required because dev.nope.plugins are in the ExamplePlugins/kotlin subdirectory.

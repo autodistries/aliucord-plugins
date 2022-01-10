@@ -82,6 +82,7 @@ class UserLookup : Plugin() {
             }
             val user = CoreUser(profile.f())
 
+
             val guildMember = profile.b()?.let { (GuildMember.Companion).from(it, ctx.currentChannel.guildId, emptyMap(), StoreStream.getGuilds()) }
             val embed = MessageEmbedBuilder().run {
                 setAuthor(
