@@ -10,11 +10,9 @@ Download the plugins from [here](https://github.com/autodistries/aliucord-plugin
 
 ## Plugins
 
-### SnowflakeUtilities
-A /timestamp to convert any discord timestamp to a readable date. Takes an ID.
-
 ### Whois
 A /whois for any user. Takes ID or mention.
 
-### Find
-A /find to find if the IDs you gave are users, channels or servers. Takes one or multiple ids separated with a space.
+### SnowflakeUtilities
+A /timestamp to convert any discord timestamp to a readable date. Takes an ID. Half-useless.
+
