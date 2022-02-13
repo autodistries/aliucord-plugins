@@ -21,35 +21,31 @@ class SnowflakeUtilities : Plugin() {
         val dateBits = x shr 22
         val unixTimes1000 = (dateBits + discordEpoch)
         return unixTimes1000 / 1000
-        // val time = Date(unix) That is less precise and adapting to timezones is harder
+        // val time = Date(unix) less precise and adapting to timezones is harder
 
     }
 
     override fun start(context: Context) {
 
 
-        // Register a command with the name hello and description "My first command!" and no arguments.
-        // Learn more: https://github.com/Aliucord/documentation/blob/main/plugin-dev/2_commands.md
-
-
         commands.registerCommand(
-            "timestamp", "Converts discord ID to date", listOf(
+            "snowflake", "Converts discord ID to date", listOf(
                 Utils.createCommandOption(
                     ApplicationCommandType.STRING,
-                    "timestamp",
-                    "Gimme timestamp",
+                    "snowflake",
+                    "The snowflake to convert",
                     null,
                     required = true,
                     default = true
                 )
             )
         ) { ctx ->
-            val id = ctx.getRequiredString("timestamp")
+            val id = ctx.getRequiredString("snowflake")
             val unixTime = timestampToUnixTime(id.toLong())
 
 
             CommandsAPI.CommandResult(
-                "Message/User was created on <t:$unixTime:F>. That's <t:$unixTime:R>.",
+                "Message/User was created on <t:$unixTime:F> (<t:$unixTime:R>).",
                 null,
                 false
             )
