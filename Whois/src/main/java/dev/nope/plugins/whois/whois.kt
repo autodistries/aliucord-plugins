@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Vendicated
+ * Copyright (C) 2022 Vendicated & nope
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,12 +78,12 @@ class UserLookup : Plugin() {
             }
             val profile = getUserProfile(userId, ctx.currentChannel.guildId) ?: run {
                 val user = RestAPI.api.userGet(userId).await().first ?: return@registerCommand fail("No such user")
-                UserProfile(null, null, user, null, null, null, 63 and 4.inv())
+                UserProfile(null, null, user, null, null, null, null)
             }
-            val user = CoreUser(profile.f())
+            val user = CoreUser(profile.g())
 
 
-            val guildMember = profile.b()?.let { (GuildMember.Companion).from(it, ctx.currentChannel.guildId, emptyMap(), StoreStream.getGuilds()) }
+            val guildMember = profile.c()?.let { (GuildMember.Companion).from(it, ctx.currentChannel.guildId, emptyMap(), StoreStream.getGuilds()) }
             val embed = MessageEmbedBuilder().run {
                 setAuthor(
                     "${if (user.isBot || user.isSystemUser) "\uD83E\uDD16 " else ""}${user.username}${
@@ -119,9 +119,9 @@ class UserLookup : Plugin() {
                 getBadgeEmojis(user.flags, profile).run {
                     if (isNotEmpty()) addField("Badges", this, true)
                 }
-                if (profile.c().isNotEmpty()) {
+                if (profile.d().isNotEmpty()) {
                     val guilds = StoreStream.getGuilds().guilds
-                    val mutualGuilds = profile.c()
+                    val mutualGuilds = profile.d()
                     addField("Mutual Servers (${mutualGuilds.size})", mutualGuilds.joinToString("\n") { "• ${guilds[it.a()]!!.name}" }, true)
                 }
                 listOf(this.build())
@@ -144,7 +144,7 @@ class UserLookup : Plugin() {
             if (flags and flag != 0) append(emoji).append(' ')
         }
         if (UserProfileUtilsKt.isPremium(profile)) append("<:nitro:314068430611415041> ")
-        UserProfileUtilsKt.getPremiumGuildMonthsSubscribed(profile)?.let {
+        UserProfileUtilsKt.getGuildBoostMonthsSubscribed(profile)?.let {
             append(
                 when (it) {
                     0 -> "<:NitroBoost:699715144862662666>"

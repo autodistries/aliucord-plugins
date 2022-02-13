@@ -1,8 +1,8 @@
 # Whois
 
-Adds a whois command
+Adds a whois slashcommand taking either a user id or a mention.
 
 
 
 
-Credits to Vendicated
+Thanks to Vendicated
