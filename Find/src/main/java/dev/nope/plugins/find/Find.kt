@@ -28,6 +28,7 @@ class Find : Plugin() {
     }
 
     override fun start(context: Context) {
+
         commands.registerCommand(
             "find", "Tries fo find what a timestamp or a list of timestamps refers to", listOf(
                 Utils.createCommandOption(
@@ -43,7 +44,10 @@ class Find : Plugin() {
             val ids = ctx.getRequiredString("timestampList")
             val input = findStringtoList(ids)
             val results: MutableMap<Long, String> = mutableMapOf()
+
             input.forEach {
+                StoreStream.getUsers()
+                Utils
                 val colit: Collection<Long> = listOf(it)
                 val tempUser: User? = StoreStream.getUsers().getUsers(colit, false)[it]
                 val tempChannel = StoreStream.getChannels().getChannel(it)
@@ -81,62 +85,63 @@ class Find : Plugin() {
                 if (results[it] == "is neither a user, a channel nor guild ID.") { //Checks if the user exists.
                     try {
 
-                    val directuser = RestAPI.api.userGet(it).await().first ?: return@forEach
-                    val userinfo =
-                        UserProfile(null, null, directuser, null, null, null, 63 and 4.inv())
-                    val user = CoreUser(userinfo.f())
+                        val directuser = RestAPI.api.userGet(it).await().first ?: return@forEach
+                        val userinfo =
+                            UserProfile(null, null, directuser, null, null, null, null)
+                        val user = CoreUser(userinfo.g())
                         results[it] =
                             "is a user that is not cached. Name: ${user.username}#${user.discriminator}, created on <t:${
                                 timestampToUnixTime(it)
                             }:F>. Avatar id: ${user.avatar}"
 
 
-                } catch (throwable: Throwable) {
-                return@forEach
+                    } catch (throwable: Throwable) {
+                        return@forEach
+                    }
+
+                }
             }
 
-            }}
+            var finalList = ""
+            results.forEach { (t, u) -> finalList += "\n**$t** $u" }
 
-        var finalList = ""
-        results.forEach { (t, u) -> finalList += "\n**$t** $u" }
-
-        CommandResult(
-            finalList,
-            null,
-            false
-        )
-    }
-}
-
-
-private fun findStringtoList(ids: String): MutableList<Long> {
-    val result = ids.split(" ").map { it.trim() }
-    val result2: MutableList<String> = result as MutableList<String>
-    val result3: MutableList<Long> = mutableListOf()
-    val counter = 0
-    result.forEach {
-        try {
-            it.toLong().takeIf { that -> that.toString().length in 17..19 } ?: (result2.set(
-                result.indexOf(it),
-                "0"
-            ))
-        } catch (throwable: Throwable) {
-            result2[result.indexOf(it)] = "0"
+            CommandResult(
+                finalList,
+                null,
+                false
+            )
         }
     }
-    result2.forEach {
-        if (it.toLong() != 0L) {
-            result3.add(it.toLong())
-        } else {
-            counter + 1
+
+
+    private fun findStringtoList(ids: String): MutableList<Long> {
+        val result = ids.split(" ").map { it.trim() }
+        val result2: MutableList<String> = result as MutableList<String>
+        val result3: MutableList<Long> = mutableListOf()
+        val counter = 0
+        result.forEach {
+            try {
+                it.toLong().takeIf { that -> that.toString().length in 17..19 } ?: (result2.set(
+                    result.indexOf(it),
+                    "0"
+                ))
+            } catch (throwable: Throwable) {
+                result2[result.indexOf(it)] = "0"
+            }
         }
+        result2.forEach {
+            if (it.toLong() != 0L) {
+                result3.add(it.toLong())
+            } else {
+                counter + 1
+            }
 
+        }
+        return result3
     }
-    return result3
-}
 
-override fun stop(context: Context) {
-    // Unregister our commands
-    commands.unregisterAll()
-}
+    override fun stop(context: Context) {
+        // Unregister our commands
+        commands.unregisterAll()
+    }
 }
