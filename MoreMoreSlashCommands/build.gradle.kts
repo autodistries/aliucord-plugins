@@ -1,14 +1,10 @@
-version = "1.0.3"
-description = "Adds a /whois that inputs a mention or a userid and returns the most info it can test about that user"
+version = "1.0.0"
+description = "Adds /fw"
 
 aliucord.changelog.set("""
-    # 1.0.3
-    * Fixed for discord base 112104
     # 1.0.0
-    * New code thanks to Vendicated. Handles every possible case. Majic :sparkles:
+    * Initial release
 """.trimIndent()
 
 )
-aliucord.author("Vendicated", 343383572805058560L)
 
-aliucord.minimumDiscordVersion.set(115104)
