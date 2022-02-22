@@ -1,25 +1,50 @@
 package dev.nope.plugins.moremoreslashcommands
 /*
- * Copyright (c) 2022  nope
+ * Copyright (c) 2022  nope and the CutTheCord project on gitdab
  * Licensed under the Open Software License version 3.0
  */
 
 
 import android.content.Context
+import android.text.style.SubscriptSpan
 import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.api.CommandsAPI
 import com.aliucord.entities.Plugin
-import com.lytefast.flexinput.model.Attachment
 
 @AliucordPlugin
 @Suppress("unused")
 class MoreSlashCommands : Plugin() {
     override fun start(context: Context?) {
-       commands.registerCommand("fw", "Makes text full width", listOf(CommandsAPI.requiredMessageOption)) { ctx ->
+       commands.registerCommand("fw", "Makes text full width ([a-Z][0-9][!-~])", listOf(CommandsAPI.requiredMessageOption)) { ctx ->
             CommandsAPI.CommandResult(fullwidthify(ctx.getRequiredString("message").trim()))
+       }
+            
+       commands.registerCommand("flip", "Flips characters ([a-z])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+               CommandsAPI.CommandResult(flipify(ctx.getRequiredString("message").trim()))
+       }
+       commands.registerCommand("morse", "Makes your text morse([a-Z][0-9][.-=])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+                    CommandsAPI.CommandResult(morseify(ctx.getRequiredString("message").trim()))
+       }
+
+       commands.registerCommand("unmorse", "decrypts morse text", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+                    CommandsAPI.CommandResult(unmorseify(ctx.getRequiredString("message").trim()), null, false)
+       } //maybe an activable option to put it in message menu would be better ? idk. May make every single command activable
+
+       commands.registerCommand("bolder", "Makes your text more bold ([a-Z][0-9])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+            CommandsAPI.CommandResult(bolderify(ctx.getRequiredString("message").trim()))
+       }
+
+        commands.registerCommand("small", "Makes your text more small ([a-z])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+            CommandsAPI.CommandResult(smallify(ctx.getRequiredString("message").trim()))
+            }
+        commands.registerCommand("smaller", "Makes your text more more small ([a-z])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
+            CommandsAPI.CommandResult(smallerify(ctx.getRequiredString("message").trim()))
         }
 
+        
     }
+
+
 
     override fun stop(context: Context?) = commands.unregisterAll()
 
@@ -123,4 +148,261 @@ class MoreSlashCommands : Plugin() {
 
 
     }
-}
+        
+        private fun flipify(text :String): String {
+                return text.toLowerCase()
+
+                
+                                .replace("a", "ɐ")
+                                .replace("b", "q")
+                                .replace("c", "ɔ")
+                                .replace("d", "p")
+                                .replace("e", "ǝ")
+                                .replace("f", "ɟ")
+                                .replace("g", "ƃ")
+                                .replace("h", "ɥ")
+                                .replace("i", "ı")
+                                .replace("j", "ɾ")
+                                .replace("k", "ʞ")
+                                .replace("l", "ן")
+                                .replace("m", "ɯ")
+                                .replace("n", "u")
+                                .replace("p", "d")
+                                .replace("q", "b")
+                                .replace("r", "ɹ")
+                                .replace("t", "ʇ")
+                                .replace("u", "n")
+                                .replace("v", "ʌ")
+                                .replace("w", "ʍ")
+                                .replace("y", "ʎ")
+        }
+        
+        private fun morseify(text: String): String {
+                return text.toUpperCase()
+                                .replace(" ", "/ ")
+                                .replace(".", ".-.-.- ")
+                                .replace(",", "--..-- ")
+                                .replace(":", "---... ")
+                                .replace("?", "..--.. ")
+                                .replace("'", ".----. ")
+                                .replace("-", "-....- ")
+                                .replace("/", "-..-. ")
+                                .replace("@", ".--.-. ")
+                                .replace("=", "-...- ")
+                                .replace("A", ".- ")
+                                .replace("B", "-... ")
+                                .replace("C", "-.-. ")
+                                .replace("D", "-.. ")
+                                .replace("E", ". ")
+                                .replace("F", "..-. ")
+                                .replace("G", "--. ")
+                                .replace("H", ".... ")
+                                .replace("I", ".. ")
+                                .replace("J", ".--- ")
+                                .replace("K", "-.- ")
+                                .replace("L", ".-.. ")
+                                .replace("M", "-- ")
+                                .replace("N", "-. ")
+                                .replace("O", "--- ")
+                                .replace("P", ".--. ")
+                                .replace("Q", "--.- ")
+                                .replace("R", ".-. ")
+                                .replace("S", "... ")
+                                .replace("T", "- ")
+                                .replace("U", "..- ")
+                                .replace("V", "...- ")
+                                .replace("W", ".-- ")
+                                .replace("X", "-..- ")
+                                .replace("Y", "-.-- ")
+                                .replace("Z", "--.. ")
+                                .replace("0", "----- ")
+                                .replace("1", ".---- ")
+                                .replace("2", "..--- ")
+                                .replace("3", "...-- ")
+                                .replace("4", "....- ")
+                                .replace("5", "..... ")
+                                .replace("6", "-.... ")
+                                .replace("7", "--... ")
+                                .replace("8", "---.. ")
+                                .replace("9", "----. ")
+        }
+
+        private fun unmorseify(text: String): String {
+                return text
+                    .replace("----. ", "9")
+                    .replace("---.. ", "8")
+                    .replace("--... ", "7")
+                    .replace("-.... ", "6")
+                    .replace("..... ", "5")
+                    .replace("....- ", "4")
+                    .replace("...-- ", "3")
+                    .replace("..--- ", "2")
+                    .replace(".---- ", "1")
+                    .replace("----- ", "0")
+                    .replace("--.. ", "Z")
+                    .replace("-.-- ", "Y")
+                    .replace("-..- ", "X")
+                    .replace(".-- ", "W")
+                    .replace("...- ", "V")
+                    .replace("..- ", "U")
+                    .replace("- ", "T")
+                    .replace("... ", "S")
+                    .replace(".-. ", "R")
+                    .replace("--.- ", "Q")
+                    .replace(".--. ", "P")
+                    .replace("--- ", "O")
+                    .replace("-. ", "N")
+                    .replace("-- ", "M")
+                    .replace(".-.. ", "L")
+                    .replace("-.- ", "K")
+                    .replace(".--- ", "J")
+                    .replace(".. ", "I")
+                    .replace(".... ", "H")
+                    .replace("--. ", "G")
+                    .replace("..-. ", "F")
+                    .replace(". ", "E")
+                    .replace("-.. ", "D")
+                    .replace("-.-. ", "C")
+                    .replace("-... ", "B")
+                    .replace(".- ", "A")
+                    .replace("-...- ", "=")
+                    .replace(".--.-. ", "@")
+                    .replace("-..-. ", "/")
+                    .replace("-....- ", "-")
+                    .replace(".----. ", "'")
+                    .replace("..--.. ", "?")
+                    .replace("---... ", ":")
+                    .replace("--..-- ", ",")
+                    .replace(".-.-.- ", ".-.-.- ")
+                    .replace("/ ", " ")
+        }
+
+    private fun bolderify(text: String): String {
+        return text
+        .replace("a", "𝗮")
+        .replace("b", "𝗯")
+        .replace("c", "𝗰")
+        .replace("d", "𝗱")
+        .replace("e", "𝗲")
+        .replace("f", "𝗳")
+        .replace("g", "𝗴")
+        .replace("h", "𝗵")
+        .replace("i", "𝗶")
+        .replace("j", "𝗷")
+        .replace("k", "𝗸")
+        .replace("l", "𝗹")
+        .replace("m", "𝗺")
+        .replace("n", "𝗻")
+        .replace("o", "𝗼")
+        .replace("p", "𝗽")
+        .replace("q", "𝗾")
+        .replace("r", "𝗿")
+        .replace("s", "𝘀")
+        .replace("t", "𝘁")
+        .replace("u", "𝘂")
+        .replace("v", "𝘃")
+        .replace("w", "𝘄")
+        .replace("x", "𝘅")
+        .replace("y", "𝘆")
+        .replace("z", "𝘇")
+        .replace("A", "𝗔")
+        .replace("B", "𝗕")
+        .replace("C", "𝗖")
+        .replace("D", "𝗗")
+        .replace("E", "𝗘")
+        .replace("F", "𝗙")
+        .replace("G", "𝗚")
+        .replace("H", "𝗛")
+        .replace("I", "𝗜")
+        .replace("J", "𝗝")
+        .replace("K", "𝗞")
+        .replace("L", "𝗟")
+        .replace("M", "𝗠")
+        .replace("N", "𝗡")
+        .replace("O", "𝗢")
+        .replace("P", "𝗣")
+        .replace("Q", "𝗤")
+        .replace("R", "𝗥")
+        .replace("S", "𝗦")
+        .replace("T", "𝗧")
+        .replace("U", "𝗨")
+        .replace("V", "𝗩")
+        .replace("W", "𝗪")
+        .replace("X", "𝗫")
+        .replace("Y", "𝗬")
+        .replace("Z", "𝗭")
+        .replace("0", "𝟬")
+        .replace("1", "𝟭")
+        .replace("2", "𝟮")
+        .replace("3", "𝟯")
+        .replace("4", "𝟰")
+        .replace("5", "𝟱")
+        .replace("6", "𝟲")
+        .replace("7", "𝟳")
+        .replace("8", "𝟴")
+        .replace("9", "𝟵")
+    }
+    
+    private fun smallify(text: String): String {
+        return text.toLowerCase()
+        .replace("a", "ᴀ")
+        .replace("b", "ʙ")
+        .replace("c", "ᴄ")
+        .replace("d", "ᴅ")
+        .replace("e", "ᴇ")
+        .replace("f", "ꜰ")
+        .replace("g", "ɢ")
+        .replace("h", "ʜ")
+        .replace("i", "ɪ")
+        .replace("j", "ᴊ")
+        .replace("k", "ᴋ")
+        .replace("l", "ʟ")
+        .replace("m", "ᴍ")
+        .replace("n", "ɴ")
+        .replace("o", "ᴏ")
+        .replace("p", "ᴘ")
+        .replace("q", "ǫ")
+        .replace("r", "ʀ")
+        .replace("t", "ᴛ")
+        .replace("u", "ᴜ")
+        .replace("v", "ᴠ")
+        .replace("w", "ᴡ")
+        .replace("y", "ʏ")
+        .replace("z", "ᴢ")
+    }
+
+    private fun smallerify(text: String): String {
+        return text
+        .replace("a", "ᵃ")
+        .replace("b", "ᵇ")
+        .replace("c", "ᶜ")
+        .replace("d", "ᵈ")
+        .replace("e", "ᵉ")
+        .replace("f", "ᶠ")
+        .replace("g", "ᵍ")
+        .replace("h", "ʰ")
+        .replace("i", "ᶦ")
+        .replace("j", "ʲ")
+        .replace("k", "ᵏ")
+        .replace("l", "ˡ")
+        .replace("m", "ᵐ")
+        .replace("n", "ⁿ")
+        .replace("o", "ᵒ")
+        .replace("p", "ᵖ")
+        .replace("q", "ᑫ")
+        .replace("r", "ʳ")
+        .replace("s", "ˢ")
+        .replace("t", "ᵗ")
+        .replace("u", "ᵘ")
+        .replace("v", "ᵛ")
+        .replace("w", "ʷ")
+        .replace("x", "ˣ")
+        .replace("y", "ʸ")
+        .replace("z", "ᶻ")
+
+
+    }
+
+
+
+    }

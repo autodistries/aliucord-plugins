@@ -1,3 +1,3 @@
 # MoreMoreSlashCommands
 
-Adds (kinda) more slash commands
+Adds (kinda) more (useless) slash commands
