@@ -8,7 +8,8 @@ include(
     "MoreMoreSlashCommands",
     "Whois",
     "Find",
-    "SnowflakeUtilities"
+    "SnowflakeUtilities",
+    "CopyUrlInsteadOfShare"
 )
 
 // This is required because dev.nope.plugins are in the ExamplePlugins/kotlin subdirectory.

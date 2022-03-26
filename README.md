@@ -16,3 +16,5 @@ A /whois for any user. Takes ID or mention.
 ### SnowflakeUtilities
 A /timestamp to convert any discord timestamp to a readable date. Takes an ID. Half-useless.
 
+### CopyUrlInsteadOfShareMessages
+Replaces the share message function with a copy url one in the message context menu
