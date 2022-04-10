@@ -55,7 +55,7 @@ class CopyUrlInsteadOfShareMessages : Plugin() {
 
                     val copyMessageUrl =
                         TextView(ctx, null, 0, R.i.UiKit_Settings_Item_Icon).apply {
-                            text = context.getString(R.h.copy_link)
+                            text = ctx.getString(R.h.copy_link)
                             id = copyMessageUrlId
                             typeface = ResourcesCompat.getFont(ctx, Constants.Fonts.whitney_medium)
                             setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
