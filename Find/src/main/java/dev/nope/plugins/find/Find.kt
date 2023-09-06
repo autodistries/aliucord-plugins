@@ -57,14 +57,14 @@ class Find : Plugin() {
                     if (tempUser?.username == null) {
                         if (tempChannel?.guildId == null) {
                             if (tempServer?.id == null) {
-                                results.put(it, "is neither a user, a channel nor guild ID.")
+                                results.put(it, "is neither a user, a channel nor guild ID, or is not cached.")
                             } else {
                                 results.put(it, "is a server.\nName: ${tempServer.name}.")
                             }
                         } else {
                             results.put(
                                 it,
-                                "is a channel: <#${it}> in category ${tempChannel.parentId} in server ${
+                                "is the channel: <#${it}> in category ${tempChannel.parentId} in server ${
                                     StoreStream.getGuilds().getGuild(tempChannel.guildId).name
                                 }."
                             )
@@ -81,8 +81,8 @@ class Find : Plugin() {
                 }
 
 
-
-                if (results[it] == "is neither a user, a channel nor guild ID.") { //Checks if the user exists.
+// welp i want to avoid making requests like that so i have to see what to do with the uncached things
+                if (false && results[it] == "is neither a user, a channel nor guild ID.") { //Checks if the user exists.
                     try {
 
                         val directuser = RestAPI.api.userGet(it).await().first ?: return@forEach
