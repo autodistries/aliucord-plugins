@@ -109,7 +109,7 @@ class MessageLinkContext : Plugin() {
                                     "message link",
                                     messageUri
                                 )
-                                showToast("Copied url $messageUri", showLonger = false)
+                                showToast("Copied url", showLonger = false)
 
                                 val bottomSheetDismisser =
                                     AppBottomSheet::class.java.getDeclaredMethod("dismiss") // because cannot access shit again
