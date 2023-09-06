@@ -1,5 +1,6 @@
 package dev.nope.plugins.copyurlinsteadofshare
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.View
@@ -14,93 +15,113 @@ import com.aliucord.Utils.showToast
 import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.entities.Plugin
 import com.aliucord.patcher.Hook
+import com.discord.app.AppBottomSheet
 import com.discord.databinding.WidgetChatListActionsBinding
-import com.discord.stores.StoreStream
 import com.discord.utilities.color.ColorCompat
 import com.discord.widgets.chat.list.actions.WidgetChatListActions
 import com.lytefast.flexinput.R
 import java.lang.reflect.InvocationTargetException
 
 
-@AliucordPlugin(requiresRestart = false /* Whether your plugin requires a restart after being installed/updated */)
-class CopyUrlInsteadOfShareMessages : Plugin() {
-    override fun start(context: Context) {
-        val shareMessagesId = Utils.getResId("dialog_chat_actions_share", "id")
+@AliucordPlugin(requiresRestart = false)
+class MessageLinkContext : Plugin() {
 
-        val icon = ContextCompat.getDrawable(context, R.e.ic_link_white_24dp)!!
+    /* No settings tab for you because Cannot access 'com.discord.app.AppLogger$a' which is a supertype of 'dev.nope.plugins.copyurlinsteadofshare.HelpMeeee'. Check your module classpath for missing or conflicting dependencies
+    init {
+        settingsTab = SettingsTab(
+            Halp::class.java,
+            SettingsTab.Type.BOTTOM_SHEET
+        ).withArgs(settings)
+    }
+    */
+
+    @SuppressLint("SetTextI18n")
+    override fun start(context: Context) {
+
+        val icon = ContextCompat.getDrawable(context, R.e.ic_diag_link_24dp)!!
             .mutate()
 
-        val copyMessageUrlId = View.generateViewId()
+        val copyMessageUrlViewId = View.generateViewId()
 
         with(WidgetChatListActions::class.java) {
             val getBinding = getDeclaredMethod("getBinding").apply { isAccessible = true }
 
+            val replaceShare = settings.getBool("replaceShare", true)
 
-
-            patcher.patch(
+            patcher.patch( //creating the option
                 getDeclaredMethod("onViewCreated", View::class.java, Bundle::class.java),
                 Hook { callFrame ->
-                    val shareMessagesId = Utils.getResId("dialog_chat_actions_share", "id")
+                    val shareMessagesViewId = Utils.getResId("dialog_chat_actions_share", "id")
                     val binding =
                         getBinding.invoke(callFrame.thisObject) as WidgetChatListActionsBinding
-                    val ShareMessages = binding.a.findViewById<TextView>(shareMessagesId).apply {
-                        visibility = View.VISIBLE
-                    }
-
+                    val shareMessageView =
+                        binding.a.findViewById<TextView>(shareMessagesViewId).apply {
+                            visibility = View.VISIBLE
+                        }
                     val linearLayout =
                         (callFrame.args[0] as NestedScrollView).getChildAt(0) as LinearLayout
                     val ctx = linearLayout.context
-
                     icon.setTint(ColorCompat.getThemedColor(ctx, R.b.colorInteractiveNormal))
-
                     val copyMessageUrl =
                         TextView(ctx, null, 0, R.i.UiKit_Settings_Item_Icon).apply {
+
                             text = ctx.getString(R.h.copy_link)
-                            id = copyMessageUrlId
+                            id = copyMessageUrlViewId
                             typeface = ResourcesCompat.getFont(ctx, Constants.Fonts.whitney_medium)
                             setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
-
-
                         }
+                    var replacementId = linearLayout.indexOfChild(shareMessageView)
+                    linearLayout.removeView(shareMessageView) // poof
 
-                    linearLayout.removeView(ShareMessages)
-                    linearLayout.addView(copyMessageUrl, 13)
+                    linearLayout.addView(
+                        copyMessageUrl,
+                        replacementId
+                    )
                 })
 
-            patcher.patch(
+            patcher.patch( //setting onClickListener
                 getDeclaredMethod("configureUI", WidgetChatListActions.Model::class.java),
                 Hook { callFrame ->
                     try {
                         val binding =
                             getBinding.invoke(callFrame.thisObject) as WidgetChatListActionsBinding
-                        val ShareMessages =
-                            binding.a.findViewById<TextView>(copyMessageUrlId).apply {
+                        val shareMessageView =
+                            binding.a.findViewById<TextView>(copyMessageUrlViewId).apply {
                                 visibility = View.VISIBLE
                             }
 
-                        ShareMessages.setOnClickListener {
+                        shareMessageView.setOnClickListener {
                             try {
                                 val msg = (callFrame.args[0] as WidgetChatListActions.Model).message
-                                var guildId =
-                                    StoreStream.getChannels().getChannel(msg.channelId).h()
-                                        .toString()
-                                if (guildId == "0") guildId = "@me"
-                                val imageUri =
-                                    "https://discord.com/channels/${guildId}/${msg.channelId}/${msg.id}"
-
+                                val guild =
+                                    (callFrame.args[0] as WidgetChatListActions.Model).guild // because msg.guildId is null
+                                val messageUri = String.format(
+                                    "https://discord.com/channels/%s/%s/%s",
+                                    try {
+                                        guild.id
+                                    } catch (e: Throwable) { // for DMs
+                                        "@me"
+                                    },
+                                    msg.channelId,
+                                    msg.id
+                                )
                                 Utils.setClipboard(
                                     "message link",
-                                    imageUri.toString() as CharSequence
+                                    messageUri
                                 )
-                                showToast("Copied $imageUri", showLonger = false)
-                                (callFrame.thisObject as WidgetChatListActions).dismiss()
+                                showToast("Copied url $messageUri", showLonger = false)
+
+                                val bottomSheetDismisser =
+                                    AppBottomSheet::class.java.getDeclaredMethod("dismiss") // because cannot access shit again
+                                bottomSheetDismisser.invoke((callFrame.thisObject as WidgetChatListActions))
                             } catch (e: IllegalAccessException) {
                                 e.printStackTrace()
                             } catch (e: InvocationTargetException) {
                                 e.printStackTrace()
                             }
                         }
-                    } catch (ignored: Throwable) {
+                    } catch (e: Exception) { //yes generic maybe works idk
+                        e.printStackTrace()
                     }
                 })
         }
