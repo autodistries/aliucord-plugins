@@ -64,7 +64,8 @@ class MessageLinkContext : Plugin() {
                     icon.setTint(ColorCompat.getThemedColor(ctx, R.b.colorInteractiveNormal))
                     val copyMessageUrl =
                         TextView(ctx, null, 0, R.i.UiKit_Settings_Item_Icon).apply {
-                            text = "Copy Message Link"
+
+                            text = ctx.getString(R.h.copy_link)
                             id = copyMessageUrlViewId
                             typeface = ResourcesCompat.getFont(ctx, Constants.Fonts.whitney_medium)
                             setCompoundDrawablesRelativeWithIntrinsicBounds(icon, null, null, null)
@@ -128,5 +129,3 @@ class MessageLinkContext : Plugin() {
 
     override fun stop(context: Context) = patcher.unpatchAll()
 }
-
-
