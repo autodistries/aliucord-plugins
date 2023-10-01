@@ -18,7 +18,7 @@ class MoreSlashCommands : Plugin() {
        commands.registerCommand("fw", "Makes text full width ([a-Z][0-9][!-~])", listOf(CommandsAPI.requiredMessageOption)) { ctx ->
             CommandsAPI.CommandResult(fullwidthify(ctx.getRequiredString("message").trim()))
        }
-            
+
        commands.registerCommand("flip", "Flips characters ([a-z])", listOf(CommandsAPI.requiredMessageOption))   { ctx ->
                CommandsAPI.CommandResult(flipify(ctx.getRequiredString("message").trim()))
        }
@@ -41,7 +41,7 @@ class MoreSlashCommands : Plugin() {
             CommandsAPI.CommandResult(smallerify(ctx.getRequiredString("message").trim()))
         }
 
-        
+
     }
 
 
@@ -148,11 +148,11 @@ class MoreSlashCommands : Plugin() {
 
 
     }
-        
+
         private fun flipify(text :String): String {
                 return text.toLowerCase()
 
-                
+
                                 .replace("a", "ɐ")
                                 .replace("b", "q")
                                 .replace("c", "ɔ")
@@ -176,7 +176,7 @@ class MoreSlashCommands : Plugin() {
                                 .replace("w", "ʍ")
                                 .replace("y", "ʎ")
         }
-        
+
         private fun morseify(text: String): String {
                 return text.toUpperCase()
                                 .replace(" ", "/ ")
@@ -185,7 +185,7 @@ class MoreSlashCommands : Plugin() {
                                 .replace(":", "---... ")
                                 .replace("?", "..--.. ")
                                 .replace("'", ".----. ")
-                                .replace("-", "-....- ")
+                           //     .replace("-", "-....- ") user should not use -
                                 .replace("/", "-..-. ")
                                 .replace("@", ".--.-. ")
                                 .replace("=", "-...- ")
@@ -228,52 +228,51 @@ class MoreSlashCommands : Plugin() {
         }
 
         private fun unmorseify(text: String): String {
-                return text
-                    .replace("----. ", "9")
-                    .replace("---.. ", "8")
-                    .replace("--... ", "7")
-                    .replace("-.... ", "6")
+                return ("$text ")
+                    .replace("..--.. ", "?")
+                    .replace(".-.-.- ", ".")
+                    .replace(".--.-. ", "@")
+                    .replace(".----. ", "'")
+                    .replace("--..-- ", ",")
+                    .replace("---... ", ":")
                     .replace("..... ", "5")
                     .replace("....- ", "4")
                     .replace("...-- ", "3")
                     .replace("..--- ", "2")
                     .replace(".---- ", "1")
+                    .replace("-.... ", "6")
+                    .replace("-...- ", "=")
+                    .replace("-..-. ", "/")
+                    .replace("--... ", "7")
+                    .replace("---.. ", "8")
+                    .replace("----. ", "9")
                     .replace("----- ", "0")
-                    .replace("--.. ", "Z")
-                    .replace("-.-- ", "Y")
-                    .replace("-..- ", "X")
-                    .replace(".-- ", "W")
+                    .replace(".... ", "H")
                     .replace("...- ", "V")
-                    .replace("..- ", "U")
-                    .replace("- ", "T")
-                    .replace("... ", "S")
-                    .replace(".-. ", "R")
-                    .replace("--.- ", "Q")
+                    .replace("..-. ", "F")
+                    .replace(".-.. ", "L")
                     .replace(".--. ", "P")
+                    .replace(".--- ", "J")
+                    .replace("-... ", "B")
+                    .replace("-..- ", "X")
+                    .replace("-.-. ", "C")
+                    .replace("-.-- ", "Y")
+                    .replace("--.. ", "Z")
+                    .replace("--.- ", "Q")
+                    .replace("... ", "S")
+                    .replace("..- ", "U")
+                    .replace(".-. ", "R")
+                    .replace(".-- ", "W")
+                    .replace("-.. ", "D")
+                    .replace("-.- ", "K")
+                    .replace("--. ", "G")
                     .replace("--- ", "O")
+                    .replace(".. ", "I")
+                    .replace(".- ", "A")
                     .replace("-. ", "N")
                     .replace("-- ", "M")
-                    .replace(".-.. ", "L")
-                    .replace("-.- ", "K")
-                    .replace(".--- ", "J")
-                    .replace(".. ", "I")
-                    .replace(".... ", "H")
-                    .replace("--. ", "G")
-                    .replace("..-. ", "F")
                     .replace(". ", "E")
-                    .replace("-.. ", "D")
-                    .replace("-.-. ", "C")
-                    .replace("-... ", "B")
-                    .replace(".- ", "A")
-                    .replace("-...- ", "=")
-                    .replace(".--.-. ", "@")
-                    .replace("-..-. ", "/")
-                    .replace("-....- ", "-")
-                    .replace(".----. ", "'")
-                    .replace("..--.. ", "?")
-                    .replace("---... ", ":")
-                    .replace("--..-- ", ",")
-                    .replace(".-.-.- ", ".-.-.- ")
+                    .replace("- ", "T")
                     .replace("/ ", " ")
         }
 
@@ -342,7 +341,7 @@ class MoreSlashCommands : Plugin() {
         .replace("8", "𝟴")
         .replace("9", "𝟵")
     }
-    
+
     private fun smallify(text: String): String {
         return text.toLowerCase()
         .replace("a", "ᴀ")
