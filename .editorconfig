@@ -1,0 +1,59 @@
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+max_line_length = 120
+tab_width = 4
+ij_continuation_indent_size = 4
+ij_any_line_comment_at_first_column = false
+ij_any_line_comment_add_space = true
+ij_smart_tabs = false
+ij_wrap_on_typing = false
+
+[*.java]
+ij_java_names_count_to_use_import_on_demand = 3
+ij_java_class_count_to_use_import_on_demand = 3
+ij_java_blank_lines_around_method_in_interface = 0
+ij_java_doc_do_not_wrap_if_one_line = true
+ij_java_keep_first_column_comment = false
+ij_java_keep_simple_blocks_in_one_line = true
+ij_java_keep_simple_classes_in_one_line = true
+ij_java_keep_simple_lambdas_in_one_line = true
+ij_java_keep_simple_methods_in_one_line = true
+ij_java_line_comment_add_space = true
+ij_java_line_comment_at_first_column = false
+ij_java_spaces_within_array_initializer_braces = true
+
+
+[*.{kt,kts}]
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+ij_kotlin_name_count_to_use_star_import = 3
+ij_kotlin_name_count_to_use_star_import_for_members = 3
+ij_kotlin_keep_first_column_comment = false
+ij_kotlin_line_comment_add_space = true
+ij_kotlin_line_comment_at_first_column = false
+ij_kotlin_call_parameters_new_line_after_left_paren = false
+ij_kotlin_call_parameters_right_paren_on_new_line = false
+ktlint_code_style = ktlint_official
+ktlint_experimental = enabled
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_string-template-indent = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_function-expression-body = disabled
+ktlint_function_signature_body_expression_wrapping = default
+ktlint_chain_method_rule_force_multiline_when_chain_operator_count_greater_or_equal_than = 6
+ktlint_class_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 3
+ktlint_function_signature_rule_force_multiline_when_parameter_count_greater_or_equal_than = 6
+
+[*.{xml,yml}]
+indent_size = 2
+ij_xml_continuation_indent_size = 4
+
+[*.properties]
+ij_properties_align_group_field_declarations = false
+ij_properties_keep_blank_lines = true
+ij_properties_key_value_delimiter = equals
+ij_properties_spaces_around_key_value_delimiter = false
