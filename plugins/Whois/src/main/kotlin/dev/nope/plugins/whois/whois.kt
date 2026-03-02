@@ -19,6 +19,7 @@ import com.aliucord.entities.Plugin
 import com.aliucord.utils.RxUtils.await
 import com.aliucord.wrappers.GuildRoleWrapper.Companion.permissions
 import com.discord.api.commands.ApplicationCommandType
+import com.discord.api.connectedaccounts.ConnectedAccount
 import com.discord.api.permission.Permission
 import com.discord.api.role.GuildRole
 import com.discord.api.user.UserFlags
@@ -83,7 +84,7 @@ class UserLookup : Plugin() {
             }
             val profile = getUserProfile(userId, ctx.currentChannel.guildId) ?: run {
                 val user = RestAPI.api.userGet(userId).await().first ?: return@registerCommand fail("No such user")
-                UserProfile(null, null, user, null, null, null, null)
+                UserProfile(emptyList<ConnectedAccount>(), emptyList<UserProfile.GuildReference>(), user, null, null, null, null) // this is kind of shit
             }
             val user = CoreUser(profile.g())
 
