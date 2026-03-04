@@ -18,7 +18,7 @@ subprojects {
 
     configure<LibraryExtension> {
         // TODO: Change to your package name
-        namespace = "com.github.yournamehere"
+        namespace = "dev.nope.plugins"
         compileSdk = 36
 
         defaultConfig {

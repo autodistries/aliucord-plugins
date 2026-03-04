@@ -57,23 +57,35 @@ class SearchHighlight : Plugin() {
                 ?: return@after
 
             @Suppress("UNCHECKED_CAST")
-            val contentTerms = params["content"] as? List<String> ?: return@after
-            val terms = contentTerms
-                .flatMap { it.split("\\s+".toRegex()) }
-                .filter { it.isNotBlank() }
-            if (terms.isEmpty()) return@after
+            val contentTerms = params["content"] as? java.util.List<*> ?: return@after
+
+            // Use only Java APIs to avoid Kotlin stdlib compat issues
+            val terms = java.util.ArrayList<String>()
+            val iter = contentTerms.iterator()
+            while (iter.hasNext()) {
+                val entry = iter.next()?.toString() ?: continue
+                val parts = (entry as java.lang.String).split(" ")
+                var i = 0
+                while (i < parts.size) {
+                    val part = parts[i].trim()
+                    if (part.length > 0) terms.add(part)
+                    i++
+                }
+            }
+            if (terms.size == 0) return@after
 
             highlightTerms(text, terms)
         }
     }
 
-    private fun highlightTerms(text: Spannable, terms: List<String>) {
+    private fun highlightTerms(text: Spannable, terms: java.util.ArrayList<String>) {
         // Semi-transparent yellow/gold highlight that works on dark backgrounds
         val highlightColor = Color.argb(100, 255, 200, 0)
-        val content = text.toString().lowercase()
+        val content = text.toString().lowercase(java.util.Locale.ROOT)
 
-        for (term in terms) {
-            val lowerTerm = term.lowercase()
+        var i = 0
+        while (i < terms.size) {
+            val lowerTerm = terms[i].lowercase(java.util.Locale.ROOT)
             var start = 0
             while (true) {
                 val index = content.indexOf(lowerTerm, start)
@@ -86,6 +98,7 @@ class SearchHighlight : Plugin() {
                 )
                 start = index + lowerTerm.length
             }
+            i++
         }
     }
 
