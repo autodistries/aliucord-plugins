@@ -5,9 +5,7 @@ import com.aliucord.annotations.AliucordPlugin
 import com.aliucord.entities.Plugin
 import com.aliucord.patcher.InsteadHook
 import com.aliucord.patcher.PreHook
-import java.lang.reflect.Field
 import java.lang.reflect.Method
-import java.lang.reflect.Modifier
 import okhttp3.WebSocket
 import org.json.JSONArray
 import org.json.JSONObject
@@ -228,8 +226,8 @@ class VoiceCallsFix : Plugin() {
                 val ws = fieldWs.get(self) ?: return@PreHook // null ws → let original handle error
 
                 try {
-                    // Convert the Identify data class into a JSONObject via reflection
-                    val dataJson = reflectToJson(identifyData)
+                    // Build IDENTIFY JSON with correct wire-format field names
+                    val dataJson = identifyToJson(identifyData)
 
                     // Inject DAVE protocol version
                     dataJson.put("max_dave_protocol_version", 1)
@@ -263,7 +261,6 @@ class VoiceCallsFix : Plugin() {
 
     /**
      * Find the WebSocket text send method. OkHttp's send(String) is obfuscated to a(String).
-     * Try 'a' first, fall back to 'send'.
      */
     private fun findWsSendMethod(ws: Any): Method {
         return try {
@@ -274,92 +271,85 @@ class VoiceCallsFix : Plugin() {
     }
 
     /**
-     * Converts any object to a JSONObject by reading all non-static declared fields.
-     * Reads @SerializedName annotations (obfuscated as @b) for correct JSON key names.
+     * Converts a Payloads.Identify object to JSON with correct wire-format field names.
+     * The Kotlin field names (serverId, sessionId, userId) differ from the wire names
+     * (server_id, session_id, user_id) via @SerializedName annotations which are
+     * obfuscated and hard to read via reflection. So we hardcode the known mappings.
+     * Null values are omitted (matching Gson's default behavior).
      */
-    private fun reflectToJson(obj: Any): JSONObject {
+    private fun identifyToJson(identify: Any): JSONObject {
+        val clazz = identify.javaClass
         val json = JSONObject()
-        for (field in obj.javaClass.declaredFields) {
-            if (Modifier.isStatic(field.modifiers)) continue
-            field.isAccessible = true
-            val key = getJsonKeyName(field)
-            val value = field.get(obj)
-            json.put(key, toJsonValue(value))
+
+        // Map Kotlin field names → wire-format JSON key names
+        val fieldMappings = mapOf(
+            "serverId" to "server_id",
+            "userId" to "user_id",
+            "sessionId" to "session_id",
+            "token" to "token",
+            "video" to "video",
+            "streams" to "streams",
+        )
+
+        for ((fieldName, jsonKey) in fieldMappings) {
+            try {
+                val field = clazz.getDeclaredField(fieldName)
+                field.isAccessible = true
+                val value = field.get(identify) ?: continue // skip nulls
+                when (jsonKey) {
+                    "streams" -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val streams = value as? List<Any> ?: continue
+                        val arr = JSONArray()
+                        for (stream in streams) {
+                            arr.put(streamToJson(stream))
+                        }
+                        json.put(jsonKey, arr)
+                    }
+                    else -> json.put(jsonKey, value)
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to read Identify field: $fieldName", e)
+            }
         }
+
         return json
     }
 
     /**
-     * Gets the JSON key name for a field. Reads @SerializedName (obfuscated as @b)
-     * via reflection to get the annotated name. Falls back to the field's own name.
+     * Converts a Payloads.Stream object to JSON with correct wire-format field names.
+     * Null values are omitted.
      */
-    private fun getJsonKeyName(field: Field): String {
-        try {
-            for (annotation in field.annotations) {
-                // The obfuscated @SerializedName is @b — look for any annotation
-                // with a value() method that returns a String
-                val annotClass = annotation.annotationClass.java
-                val name = annotClass.name
-                // Match both obfuscated (@b) and unobfuscated (@SerializedName)
-                if (name == "com.google.gson.annotations.SerializedName" ||
-                    name.length <= 2 // short obfuscated name like "b"
-                ) {
-                    try {
-                        val valueMethod = annotClass.getDeclaredMethod("value")
-                        val result = valueMethod.invoke(annotation)
-                        if (result is String && result.isNotEmpty()) {
-                            return result
-                        }
-                    } catch (_: Exception) {
-                        // Not the right annotation, continue
-                    }
-                }
-            }
-        } catch (_: Exception) {
-            // Reflection failed, use field name
-        }
-        return field.name
-    }
+    private fun streamToJson(stream: Any): JSONObject {
+        val clazz = stream.javaClass
+        val json = JSONObject()
 
-    /**
-     * Recursively converts a value to a JSON-compatible type for org.json.
-     */
-    private fun toJsonValue(value: Any?): Any {
-        return when (value) {
-            null -> JSONObject.NULL
-            is String, is Boolean -> value
-            is Number -> value
-            is List<*> -> {
-                val arr = JSONArray()
-                for (item in value) {
-                    arr.put(toJsonValue(item))
-                }
-                arr
-            }
-            is Array<*> -> {
-                val arr = JSONArray()
-                for (item in value) {
-                    arr.put(toJsonValue(item))
-                }
-                arr
-            }
-            is Map<*, *> -> {
-                val obj = JSONObject()
-                for ((k, v) in value) {
-                    obj.put(k.toString(), toJsonValue(v))
-                }
-                obj
-            }
-            is Enum<*> -> value.name
-            else -> {
-                // Nested object — recurse via reflection
-                try {
-                    reflectToJson(value)
-                } catch (_: Exception) {
-                    value.toString()
-                }
+        val fieldMappings = mapOf(
+            "type" to "type",
+            "rid" to "rid",
+            "quality" to "quality",
+            "active" to "active",
+            "ssrc" to "ssrc",
+            "rtxSsrc" to "rtx_ssrc",
+            "maxBitrate" to "max_bitrate",
+            "maxFrameRate" to "max_framerate",
+            "maxResolution" to "max_resolution",
+        )
+
+        for ((fieldName, jsonKey) in fieldMappings) {
+            try {
+                val field = clazz.getDeclaredField(fieldName)
+                field.isAccessible = true
+                val value = field.get(stream) ?: continue // skip nulls
+                json.put(jsonKey, value)
+            } catch (_: NoSuchFieldException) {
+                // Field doesn't exist in this version, skip
+            } catch (e: Exception) {
+                logger.error("Failed to read Stream field: $fieldName", e)
             }
         }
+
+        return json
     }
 
     // ── Patch 3: Handle DAVE opcodes in onMessage ──────────────────────────
