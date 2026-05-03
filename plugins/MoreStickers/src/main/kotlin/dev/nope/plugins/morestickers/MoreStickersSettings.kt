@@ -93,6 +93,51 @@ class MoreStickersSettings : SettingsPage() {
             }
         })
 
+        val cacheHeader = TextView(context).apply {
+            text = "Image Cache"
+        }
+        cacheHeader.setPadding(0, pad8, 0, pad8)
+        container.addView(cacheHeader)
+
+        container.addView(createActionItem("Preload all packs (cache images)") {
+            logger.debug("Preload all button clicked")
+            Utils.threadPool.execute {
+                try {
+                    val packs = StickerStore.getPacks(plugin.settings)
+                    logger.debug("Starting preload of ${packs.size} pack(s)")
+                    Utils.showToast("Preloading ${packs.size} pack(s)...")
+                    packs.forEach { pack ->
+                        StickerStore.cachePackImages(pack)
+                    }
+                    Utils.mainThread.post {
+                        Utils.showToast("Preload started for ${packs.size} pack(s)")
+                    }
+                } catch (e: Exception) {
+                    logger.error("Preload failed", e)
+                    Utils.mainThread.post {
+                        Utils.showToast("Preload failed: ${e.message}")
+                    }
+                }
+            }
+        })
+
+        container.addView(createActionItem("View cache size") {
+            logger.debug("View cache size clicked")
+            Utils.threadPool.execute {
+                val sizeBytes = StickerStore.getImageCacheSize()
+                val sizeMb = sizeBytes / (1024f * 1024f)
+                Utils.mainThread.post {
+                    Utils.showToast("Cache size: ${"%.2f".format(sizeMb)} MB")
+                }
+            }
+        })
+
+        container.addView(createActionItem("Clear image cache") {
+            logger.debug("Clear cache clicked")
+            StickerStore.clearImageCache()
+            Utils.showToast("Image cache cleared")
+        })
+
         val header = TextView(context).apply {
             text = "Installed Packs"
         }
@@ -151,6 +196,30 @@ class MoreStickersSettings : SettingsPage() {
                     layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 }
 
+                val preload = TextView(context).apply {
+                    text = "Preload"
+                    setTextColor(ColorCompat.getThemedColor(context, R.b.colorTextBrand))
+                    layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                        rightMargin = DimenUtils.dpToPixels(8)
+                    }
+                    setOnClickListener {
+                        logger.debug("Preload clicked for pack: ${pack.title} (id=${pack.id})")
+                        Utils.threadPool.execute {
+                            try {
+                                StickerStore.cachePackImages(pack)
+                                Utils.mainThread.post {
+                                    Utils.showToast("Preloading ${pack.title}...")
+                                }
+                            } catch (e: Exception) {
+                                logger.error("Preload failed for pack ${pack.title}", e)
+                                Utils.mainThread.post {
+                                    Utils.showToast("Preload failed: ${e.message}")
+                                }
+                            }
+                        }
+                    }
+                }
+
                 val remove = TextView(context).apply {
                     text = "Remove"
                     setTextColor(ColorCompat.getThemedColor(context, R.b.colorStatusDanger))
@@ -164,6 +233,7 @@ class MoreStickersSettings : SettingsPage() {
                 }
 
                 row.addView(title)
+                row.addView(preload)
                 row.addView(remove)
                 packList.addView(row)
             }

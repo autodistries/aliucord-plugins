@@ -5,51 +5,60 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.*
-import android.widget.*
-import androidx.recyclerview.widget.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.aliucord.PluginManager
 import com.aliucord.Utils
-import com.aliucord.api.SettingsAPI
-import com.aliucord.widgets.BottomSheet
+import com.discord.app.AppFragment
 import com.discord.stores.StoreStream
 import com.discord.utilities.color.ColorCompat
 import com.discord.utilities.dimen.DimenUtils
 import com.discord.utilities.images.MGImages
 import com.discord.utilities.premium.PremiumUtils
 import com.facebook.drawee.view.SimpleDraweeView
-import com.lytefast.flexinput.R
 import com.lytefast.flexinput.model.Attachment
 
 private const val RECENT_PACK_ID = "recent"
 
-class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
-    private lateinit var packAdapter: PackAdapter
-    private lateinit var stickerAdapter: StickerAdapter
-    private lateinit var emptyView: TextView
+class MoreStickersFragment : AppFragment() {
+    private val plugin: MoreStickers?
+        get() = PluginManager.plugins["MoreStickers"] as? MoreStickers
 
     private var packs: List<StickerPack> = emptyList()
     private var recent: List<Sticker> = emptyList()
     private var selectedPackId = RECENT_PACK_ID
     private var query: String = ""
+    private val packImageChangeDetector = MGImages.AlwaysUpdateChangeDetector.INSTANCE
 
-    override fun onViewCreated(view: View, bundle: Bundle?) {
-        super.onViewCreated(view, bundle)
+    private lateinit var packAdapter: PackAdapter
+    private lateinit var stickerAdapter: StickerAdapter
+    private lateinit var emptyView: TextView
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val context = requireContext()
-        packs = StickerStore.getPacks(settings)
-        recent = StickerStore.getRecent(settings)
-
         val pad16 = DimenUtils.dpToPixels(16)
         val pad8 = DimenUtils.dpToPixels(8)
 
         val root = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(pad16, pad16, pad16, pad16)
+            layoutParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
         }
 
         val title = TextView(context).apply {
             text = "MoreStickers"
             textSize = 16f
-            setTextColor(ColorCompat.getThemedColor(context, R.b.colorTextBrand))
+            setTextColor(ColorCompat.getThemedColor(context, com.lytefast.flexinput.R.b.colorTextBrand))
         }
         root.addView(title)
 
@@ -57,29 +66,27 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
             hint = "Search stickers"
             setSingleLine(true)
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT,
             ).apply {
                 bottomMargin = pad8
             }
-            addTextChangedListener(
-                object : TextWatcher {
-                    override fun afterTextChanged(s: Editable) {
-                        query = s.toString()
-                        updateStickers()
-                    }
+            addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable) {
+                    query = s.toString()
+                    updateStickers()
+                }
 
-                    override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                    }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
 
-                    override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    }
-                },
-            )
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+            })
         }
         root.addView(search)
 
-        packAdapter = PackAdapter(context, emptyList(), selectedPackId) { item ->
+        packAdapter = PackAdapter(context, emptyList(), selectedPackId, packImageChangeDetector) { item ->
             selectedPackId = item.id
             packAdapter.setSelected(item.id)
             updateStickers()
@@ -89,7 +96,7 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
             adapter = packAdapter
             overScrollMode = View.OVER_SCROLL_NEVER
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
                 DimenUtils.dpToPixels(48),
             ).apply {
                 bottomMargin = pad8
@@ -101,10 +108,10 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
             text = "No stickers to show. Import packs from settings."
             visibility = View.GONE
             gravity = Gravity.CENTER_HORIZONTAL
-            setTextColor(ColorCompat.getThemedColor(context, R.b.colorTextMuted))
+            setTextColor(ColorCompat.getThemedColor(context, com.lytefast.flexinput.R.b.colorTextMuted))
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
+                LayoutParams.MATCH_PARENT,
+                LayoutParams.WRAP_CONTENT,
             ).apply {
                 bottomMargin = pad8
             }
@@ -118,14 +125,49 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
             layoutManager = GridLayoutManager(context, 3)
             adapter = stickerAdapter
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                LayoutParams.MATCH_PARENT,
                 0,
                 1f,
             )
         }
         root.addView(stickerRecycler)
 
-        addView(root)
+        refreshData()
+        return root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        try {
+            val parent = parentFragment
+            parent?.javaClass?.getMethod("showStickersSearchBar", Boolean::class.javaPrimitiveType)
+                ?.invoke(parent, true)
+        } catch (_: Exception) {
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshData()
+    }
+
+    override fun onDestroyView() {
+        try {
+            val parent = parentFragment
+            parent?.javaClass?.getMethod("showStickersSearchBar", Boolean::class.javaPrimitiveType)
+                ?.invoke(parent, false)
+        } catch (_: Exception) {
+        }
+        super.onDestroyView()
+    }
+
+    private fun refreshData() {
+        val currentPlugin = plugin ?: return
+        packs = StickerStore.getLoadedPacks(currentPlugin.settings)
+        recent = StickerStore.getRecent(currentPlugin.settings)
+        if (selectedPackId != RECENT_PACK_ID && StickerStore.getLoadedPack(currentPlugin.settings, selectedPackId) == null) {
+            selectedPackId = RECENT_PACK_ID
+        }
         updatePackItems()
         updateStickers()
     }
@@ -144,24 +186,27 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
                 isRecent = true,
             ),
         )
+
         packs.forEach { pack ->
-            val iconUrl = pack.logo?.image ?: pack.stickers.firstOrNull()?.image
+            val iconUrl = StickerStore.getPackIconUrl(pack)
             items.add(
                 PackItem(
                     id = pack.id,
-                    title = pack.title,
+                    title = StickerStore.getPackTitle(pack),
                     iconUrl = iconUrl?.let { StickerStore.getDisplayImageUrl(it) },
                     isRecent = false,
                 ),
             )
         }
+
         return items
     }
 
     private fun updateStickers() {
+        val settings = plugin?.settings ?: return
         val stickers = when (selectedPackId) {
             RECENT_PACK_ID -> recent
-            else -> packs.firstOrNull { it.id == selectedPackId }?.stickers ?: emptyList()
+            else -> StickerStore.getLoadedPackStickers(settings, selectedPackId)
         }
 
         val filtered = if (query.trim().isEmpty()) {
@@ -175,6 +220,7 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
     }
 
     private fun sendSticker(sticker: Sticker) {
+        val currentPlugin = plugin ?: return
         val context = context ?: return
         val channelId = StoreStream.getChannelsSelected().id
         if (channelId <= 0L) {
@@ -226,13 +272,12 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
                     }
                 }
 
-                StickerStore.addRecent(settings, sticker)
+                StickerStore.addRecent(currentPlugin.settings, sticker)
                 Utils.mainThread.post {
-                    recent = StickerStore.getRecent(settings)
+                    recent = StickerStore.getRecent(currentPlugin.settings)
                     if (selectedPackId == RECENT_PACK_ID) {
                         updateStickers()
                     }
-                    dismiss()
                 }
             } catch (e: Exception) {
                 Utils.showToast("Failed to send sticker: ${'$'}{e.message}")
@@ -251,11 +296,12 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
         private val context: Context,
         private var items: List<PackItem>,
         private var selectedId: String,
+        private val changeDetector: MGImages.ChangeDetector,
         private val onSelect: (PackItem) -> Unit,
     ) : RecyclerView.Adapter<PackViewHolder>() {
         private val size = DimenUtils.dpToPixels(32)
         private val padding = DimenUtils.dpToPixels(6)
-        private val selectedBg = ColorCompat.getThemedColor(context, R.b.colorBackgroundSecondaryAlt)
+        private val selectedBg = ColorCompat.getThemedColor(context, com.lytefast.flexinput.R.b.colorBackgroundSecondaryAlt)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PackViewHolder {
             val container = FrameLayout(context).apply {
@@ -282,7 +328,7 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
                 }
                 holder.image.setImageResource(resId)
             } else {
-                MGImages.setImage(holder.image, item.iconUrl, 0, 0, false, null, MGImages.AlwaysUpdateChangeDetector.INSTANCE)
+                MGImages.setImage(holder.image, item.iconUrl, 0, 0, false, null, changeDetector)
             }
             holder.container.setOnClickListener { onSelect(item) }
             holder.container.contentDescription = item.title
@@ -324,8 +370,8 @@ class MoreStickersSheet(private val settings: SettingsAPI) : BottomSheet() {
             }
             val image = SimpleDraweeView(context).apply {
                 layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT,
                 )
             }
             container.addView(image)

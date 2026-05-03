@@ -2,6 +2,7 @@ package dev.nope.plugins.morestickers
 
 import com.aliucord.Constants
 import com.aliucord.Http
+import com.aliucord.Utils
 import com.aliucord.api.SettingsAPI
 import org.json.JSONArray
 import org.json.JSONObject
@@ -9,11 +10,42 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.ArrayList
 import kotlin.jvm.JvmName
+import java.security.MessageDigest
 
 object StickerStore {
     private const val KEY_PACKS = "packs"
     private const val KEY_RECENT = "recent"
     private const val RECENT_LIMIT = 16
+
+    fun getLoadedPacks(settings: SettingsAPI): List<StickerPack> {
+        return getPacks(settings)
+    }
+
+    fun getLoadedPack(settings: SettingsAPI, packId: String): StickerPack? {
+        return getLoadedPacks(settings).firstOrNull { it.id == packId }
+    }
+
+    fun getLoadedPackStickers(settings: SettingsAPI, packId: String): List<Sticker> {
+        return getLoadedPack(settings, packId)?.stickers.orEmpty()
+    }
+
+    fun getPackIconUrl(pack: StickerPack): String? {
+        return pack.logo?.image?.takeIf { it.trim().isNotEmpty() }
+            ?: pack.coverStickerId?.let { coverStickerId ->
+                pack.stickers.firstOrNull { sticker ->
+                    sticker.id == coverStickerId.toString() || sticker.id.toLongOrNull() == coverStickerId
+                }?.image
+            }?.takeIf { it.trim().isNotEmpty() }
+            ?: pack.stickers.firstOrNull()?.image?.takeIf { it.trim().isNotEmpty() }
+    }
+
+    fun getPackTitle(pack: StickerPack): String {
+        return pack.title.trim().ifEmpty { pack.id }
+    }
+
+    fun getLoadedStickers(settings: SettingsAPI): List<Sticker> {
+        return getLoadedPacks(settings).flatMap { it.stickers }
+    }
 
     fun getPacks(settings: SettingsAPI): MutableList<StickerPack> {
         return settings.getString(KEY_PACKS, "[]").toStickerPackList().toMutableList()
@@ -177,6 +209,113 @@ object StickerStore {
         return file
     }
 
+    fun getImageCacheDirPath(): String {
+        val dir = File(Constants.BASE_PATH, "MoreStickers/imagecache")
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        return dir.absolutePath
+    }
+
+    fun getImageCacheDir(): File {
+        return File(getImageCacheDirPath())
+    }
+
+    fun getCachedImagePath(imageUrl: String): String? {
+        val cacheFile = File(getImageCacheDir(), getUrlHash(imageUrl))
+        return if (cacheFile.exists()) cacheFile.absolutePath else null
+    }
+
+    fun getCachedImageUriOrDownload(imageUrl: String): String {
+        // Check if already cached
+        val cached = getCachedImagePath(imageUrl)
+        if (cached != null) {
+            logger.debug("Image cache hit: $imageUrl")
+            return "file://$cached"
+        }
+
+        // Download and cache
+        logger.debug("Image cache miss, downloading: $imageUrl")
+        return try {
+            val cachedPath = downloadImageToCache(imageUrl)
+            "file://$cachedPath"
+        } catch (e: Exception) {
+            logger.error("Failed to download and cache image: $imageUrl", e)
+            // Return original URL if download fails, let MGImages handle it
+            imageUrl
+        }
+    }
+
+    fun downloadImageToCache(imageUrl: String): String {
+        val cacheFile = File(getImageCacheDir(), getUrlHash(imageUrl))
+        
+        val response = Http.Request(imageUrl).execute()
+        FileOutputStream(cacheFile).use { output ->
+            response.pipe(output)
+        }
+        
+        logger.debug("Image cached: ${cacheFile.absolutePath}")
+        return cacheFile.absolutePath
+    }
+
+    fun clearImageCache() {
+        val cacheDir = getImageCacheDir()
+        if (cacheDir.exists()) {
+            val files = cacheDir.listFiles() ?: emptyArray()
+            for (file in files) {
+                if (file.isFile) {
+                    val deleted = file.delete()
+                    logger.debug("Cache file ${file.name}: ${if (deleted) "deleted" else "delete failed"}")
+                }
+            }
+        }
+    }
+
+    fun getImageCacheSize(): Long {
+        val cacheDir = getImageCacheDir()
+        if (!cacheDir.exists()) return 0L
+        val files = cacheDir.listFiles() ?: emptyArray()
+        return files.sumOf { if (it.isFile) it.length() else 0L }
+    }
+
+    private fun getUrlHash(url: String): String {
+        val digest = MessageDigest.getInstance("MD5")
+        val hash = digest.digest(url.toByteArray())
+        return hash.joinToString("") { "%02x".format(it) }
+    }
+
+    fun cachePackImages(pack: StickerPack) {
+        Utils.threadPool.execute {
+            try {
+                pack.logo?.image?.let { url ->
+                    if (url.trim().isNotEmpty()) {
+                        try {
+                            getCachedImageUriOrDownload(url)
+                        } catch (e: Exception) {
+                            logger.error("Failed to cache pack logo", e)
+                        }
+                    }
+                }
+                pack.stickers.forEach { sticker ->
+                    if (sticker.image.trim().isNotEmpty()) {
+                        try {
+                            getCachedImageUriOrDownload(sticker.image)
+                        } catch (e: Exception) {
+                            logger.error("Failed to cache sticker image", e)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                logger.error("Failed to cache pack images", e)
+            }
+        }
+    }
+
+    fun getDisplayImageUrl(imageUrl: String): String {
+        if (imageUrl.trim().isEmpty()) return imageUrl
+        return getCachedImageUriOrDownload(imageUrl)
+    }
+
     private fun normalizePack(pack: StickerPack): StickerPack {
         val title = if (pack.title.trim().isEmpty()) pack.id else pack.title
         val fixedLogo = pack.logo?.let { logo ->
@@ -276,8 +415,19 @@ object StickerStore {
                 )
             },
             logo = optJSONObject("logo")?.toSticker(),
+            coverStickerId = optLongOrNull("coverStickerId"),
+            bannerAssetId = optLongOrNull("bannerAssetId"),
             stickers = List(stickersArray.length()) { index -> stickersArray.getJSONObject(index).toSticker() },
         )
+    }
+
+    private fun JSONObject.optLongOrNull(key: String): Long? {
+        if (!has(key) || isNull(key)) return null
+        return when (val value = opt(key)) {
+            is Number -> value.toLong()
+            is String -> value.toLongOrNull()
+            else -> null
+        }
     }
 
     private fun JSONObject.toSticker(): Sticker {

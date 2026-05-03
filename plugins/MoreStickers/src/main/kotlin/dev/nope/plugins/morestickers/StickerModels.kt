@@ -19,5 +19,7 @@ data class StickerPack(
     val title: String,
     val author: StickerAuthor? = null,
     val logo: Sticker? = null,
+    val coverStickerId: Long? = null,
+    val bannerAssetId: Long? = null,
     val stickers: List<Sticker> = emptyList(),
 )

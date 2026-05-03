@@ -88,20 +88,22 @@ class MoreStickers : Plugin() {
                             // Add the CardSegment to the segmented control
                             segControl.addView(cardSegment)
 
-                            // Create a content frame and add it to the content container
-                            val frame = FrameLayout(root.context).apply {
+                            // Create a FragmentContainerView and add it to the content container
+                            val fragView = androidx.fragment.app.FragmentContainerView(root.context).apply {
                                 tag = "more-stickers-content"
                                 id = View.generateViewId()
                                 layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
                                 visibility = View.GONE
                             }
-                            // simple placeholder content for the prototype
-                            val placeholder = TextView(root.context).apply {
-                                text = "MoreStickers (plugin)"
-                                setPadding(20, 20, 20, 20)
+                            contentContainer.addView(fragView)
+
+                            // Install our fragment into the tray's child fragment manager so it behaves like other tabs
+                            try {
+                                val trayFragment = param.thisObject as? com.discord.app.AppFragment
+                                trayFragment?.childFragmentManager?.beginTransaction()?.replace(fragView.id, MoreStickersFragment(), "more_stickers_fragment")?.commit()
+                            } catch (e: Exception) {
+                                logger.error("Could not attach MoreStickersFragment", e)
                             }
-                            frame.addView(placeholder)
-                            contentContainer.addView(frame)
 
                             // Wire selection listeners: re-run SegmentedControlContainer.a(selectedIndex)
                             // so the container sets its original OnClickListeners for all children (including ours).
@@ -123,6 +125,8 @@ class MoreStickers : Plugin() {
                                 mOnClickListenerField.isAccessible = true
 
                                 val childCount = segControl.childCount
+                                // original tab count is childCount - 1 (we added one)
+                                val originalTabCount = if (childCount > 0) childCount - 1 else childCount
                                 val emojiId = Utils.getResId("expression_tray_emoji_picker_content", "id")
                                 val gifId = Utils.getResId("expression_tray_gif_picker_content", "id")
                                 val stickerId = Utils.getResId("expression_tray_sticker_picker_content", "id")
@@ -133,27 +137,29 @@ class MoreStickers : Plugin() {
                                     @Suppress("UNCHECKED_CAST")
                                     val original = mOnClickListenerField.get(li) as? View.OnClickListener
 
-                                    // set wrapper listener
+                                    // set wrapper listener; avoid invoking original behaviour for our custom tab
                                     child.setOnClickListener { v ->
                                         try {
-                                            original?.onClick(v)
+                                            if (i < originalTabCount) {
+                                                original?.onClick(v)
+                                            }
                                         } catch (e: Exception) {
                                             logger.error("Error invoking original child click", e)
                                         }
                                         try {
                                             if (i == segControl.indexOfChild(cardSegment)) {
-                                                // our tab selected
+                                                // our tab selected — hide built-in pickers, show our fragment container
                                                 root.findViewById<View?>(emojiId)?.visibility = View.GONE
                                                 root.findViewById<View?>(gifId)?.visibility = View.GONE
                                                 root.findViewById<View?>(stickerId)?.visibility = View.GONE
-                                                frame.visibility = View.VISIBLE
+                                                fragView.visibility = View.VISIBLE
                                                 segControl.setSelectedIndex(i)
                                             } else {
-                                                // other tab selected
+                                                // other tab selected — show built-in pickers, hide our container
                                                 root.findViewById<View?>(emojiId)?.visibility = View.VISIBLE
                                                 root.findViewById<View?>(gifId)?.visibility = View.VISIBLE
                                                 root.findViewById<View?>(stickerId)?.visibility = View.VISIBLE
-                                                frame.visibility = View.GONE
+                                                fragView.visibility = View.GONE
                                                 segControl.setSelectedIndex(i)
                                             }
                                         } catch (e: Exception) {
@@ -173,50 +179,6 @@ class MoreStickers : Plugin() {
                 } catch (e: Exception) {
                     logger.error("Failed to patch WidgetExpressionTray", e)
                 }
-                val expressionContainer = root.findViewById<FrameLayout>(expressionContainerId)
-                if (expressionContainer == null) {
-                    logger.warn("Could not find expressionContainer by ID")
-                    return@after
-                }
-
-                // Check if button already exists (avoid duplicates)
-                if (mainContainer.findViewWithTag<View>(BUTTON_TAG) != null) {
-                    logger.info("Sticker button already added, skipping")
-                    return@after
-                }
-
-                logger.info("Creating and adding sticker button")
-                val pad = DimenUtils.dpToPixels(8)
-                val button = AppCompatImageButton(root.context).apply {
-                    tag = BUTTON_TAG
-                    contentDescription = "More stickers"
-                    background = null
-                    setPadding(pad, pad, pad, pad)
-                    setImageResource(Utils.getResId("ic_sticker_icon_24dp", "drawable"))
-                    imageTintList = android.content.res.ColorStateList.valueOf(
-                        ColorCompat.getThemedColor(context, R.b.colorInteractiveNormal),
-                    )
-                    setOnClickListener {
-                        logger.info("Sticker button clicked")
-                        val activity = Utils.appActivity
-                        activity?.let {
-                            logger.info("Showing MoreStickersSheet")
-                            MoreStickersSheet(settings).show(it.supportFragmentManager, "MoreStickersSheet")
-                        } ?: run {
-                            logger.warn("AppActivity is null, cannot show sticker sheet")
-                        }
-                    }
-                }
-
-                val index = mainContainer.indexOfChild(expressionContainer)
-                if (index >= 0) {
-                    logger.info("Adding button at index $index (before expressionContainer)")
-                    mainContainer.addView(button, index)
-                } else {
-                    logger.info("Adding button at end of mainContainer")
-                    mainContainer.addView(button)
-                }
-
                 logger.info("Sticker button added successfully")
             } catch (e: Exception) {
                 logger.error("Error patching FlexInputFragment", e)
