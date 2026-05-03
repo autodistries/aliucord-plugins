@@ -11,6 +11,8 @@ import java.io.FileOutputStream
 import java.util.ArrayList
 import kotlin.jvm.JvmName
 import java.security.MessageDigest
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 
 object StickerStore {
     private const val KEY_PACKS = "packs"
@@ -206,7 +208,43 @@ object StickerStore {
         FileOutputStream(file).use { output ->
             response.pipe(output)
         }
-        return file
+
+        // If sticker is animated, don't attempt to resize (may break animation)
+        if (sticker.isAnimated == true) {
+            return file
+        }
+
+        try {
+            // Decode the downloaded image
+            val original: Bitmap? = BitmapFactory.decodeFile(file.absolutePath)
+            if (original == null) {
+                // Could not decode, return original file
+                return file
+            }
+
+            // Resize to 160x160
+            val targetSize = 160
+            val scaled: Bitmap = Bitmap.createScaledBitmap(original, targetSize, targetSize, true)
+
+            // Write scaled bitmap to a new file (PNG to preserve transparency)
+            val resizedFile = File(cacheDir, "more_stickers_${System.currentTimeMillis()}_resized.png")
+            FileOutputStream(resizedFile).use { out ->
+                scaled.compress(Bitmap.CompressFormat.PNG, 100, out)
+                out.flush()
+            }
+
+            // Recycle bitmaps to free memory
+            try { original.recycle() } catch (_: Exception) {}
+            try { scaled.recycle() } catch (_: Exception) {}
+
+            // Delete original downloaded file to save space
+            try { if (file.exists()) file.delete() } catch (_: Exception) {}
+
+            return resizedFile
+        } catch (e: Exception) {
+            logger.error("Failed to resize image, using original", e)
+            return file
+        }
     }
 
     fun getImageCacheDirPath(): String {
