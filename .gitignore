@@ -22,3 +22,5 @@ local.properties
 
 decompiled/
 data/
+
+*/.agents
