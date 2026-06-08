@@ -39,6 +39,8 @@ jobs:
           cd $GITHUB_WORKSPACE/src
           chmod +x gradlew
           CI=true ./gradlew make generateUpdaterJson
+          pwd
+          find . -iname "*.zip"
           cp **/plugins/*/build/outputs/*.zip $GITHUB_WORKSPACE/builds
           cp build/updater.json $GITHUB_WORKSPACE/builds
 
