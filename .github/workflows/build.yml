@@ -42,7 +42,7 @@ jobs:
           pwd
           find . -iname "*.zip"
           cp $(find . -wholename "./plugins/*/build/outputs/*.zip") $GITHUB_WORKSPACE/builds
-          cp build/updater.json $GITHUB_WORKSPACE/builds
+          cp build/outputs/updater.json $GITHUB_WORKSPACE/builds
 
       - name: Push builds
         run: |
