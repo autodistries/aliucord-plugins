@@ -1,4 +1,4 @@
-package dev.nope.plugins.mobileidle
+package dev.nope.plugins.autoidle
 
 import android.app.Activity
 import android.app.Application
@@ -16,7 +16,7 @@ import com.discord.stores.StoreStream
     requiresRestart = false,
 )
 @Suppress("unused")
-class MobileIdle : Plugin() {
+class AutoIdle : Plugin() {
     private var resumedActivities = 0
 
     // Only set when we ourselves switched the session to idle (i.e. it was
