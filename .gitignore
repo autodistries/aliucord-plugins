@@ -23,4 +23,7 @@ local.properties
 decompiled/
 data/
 
-*/.agents
+/.agents
+/.claude
+aliucord-plugins.code-workspace
+skills-lock.json
